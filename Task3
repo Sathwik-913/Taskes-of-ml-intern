@@ -1,0 +1,31 @@
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import davies_bouldin_score
+import matplotlib.pyplot as plt
+
+# Preprocessing for clustering
+features = merged.groupby("CustomerID").agg({
+    "TotalValue": "sum",
+    "Quantity": "sum",
+    "Price": "mean"
+}).reset_index()
+features = features.drop("CustomerID", axis=1)
+
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(features)
+
+# K-Means Clustering
+kmeans = KMeans(n_clusters=5, random_state=42)
+clusters = kmeans.fit_predict(scaled_features)
+
+# Evaluate clusters
+db_index = davies_bouldin_score(scaled_features, clusters)
+print("DB Index:", db_index)
+
+# Visualize clusters
+plt.figure(figsize=(8, 6))
+plt.scatter(scaled_features[:, 0], scaled_features[:, 1], c=clusters, cmap='viridis')
+plt.title("Customer Clusters")
+plt.xlabel("Feature 1 (Scaled)")
+plt.ylabel("Feature 2 (Scaled)")
+plt.show()
