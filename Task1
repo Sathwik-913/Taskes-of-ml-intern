@@ -1,0 +1,34 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load datasets
+customers = pd.read_csv("Customers.csv")
+products = pd.read_csv("Products.csv")
+transactions = pd.read_csv("Transactions.csv")
+
+# Convert dates to datetime
+customers['SignupDate'] = pd.to_datetime(customers['SignupDate'])
+transactions['TransactionDate'] = pd.to_datetime(transactions['TransactionDate'])
+
+# EDA
+print(customers.info())
+print(products.info())
+print(transactions.info())
+
+# Merge datasets
+merged = transactions.merge(customers, on="CustomerID").merge(products, on="ProductID")
+
+# Summary statistics
+print(merged.describe())
+
+# Visualize transactions over time
+plt.figure(figsize=(10, 6))
+merged.groupby(merged['TransactionDate'].dt.to_period('M')).sum()['TotalValue'].plot(kind='bar')
+plt.title("Monthly Transaction Values")
+plt.ylabel("Total Value (USD)")
+plt.xlabel("Month")
+plt.xticks(rotation=45)
+plt.show()
+
+# Business Insights (add additional analyses as required)
