@@ -1,0 +1,25 @@
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
+
+# Create user-product matrix
+user_product_matrix = merged.pivot_table(index="CustomerID", columns="ProductID", values="TotalValue", aggfunc='sum', fill_value=0)
+
+# Calculate cosine similarity
+similarity_matrix = cosine_similarity(user_product_matrix)
+
+# Create a lookalike list
+customer_ids = user_product_matrix.index.tolist()
+lookalikes = {}
+
+for i, customer in enumerate(customer_ids[:20]):  # First 20 customers
+    sim_scores = list(enumerate(similarity_matrix[i]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:4]  # Top 3 lookalikes
+    lookalikes[customer] = [(customer_ids[j], score) for j, score in sim_scores]
+
+# Save lookalikes to CSV
+lookalike_df = pd.DataFrame([(k, v[0][0], v[0][1]) for k, v in lookalikes.items()],
+                            columns=["CustomerID", "LookalikeCustomerID", "SimilarityScore"])
+lookalike_df.to_csv("FirstName_LastName_Lookalike.csv", index=False)
+
+print(lookalike_df)
